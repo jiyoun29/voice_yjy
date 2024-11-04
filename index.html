@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Chatbot</title>
+</head>
+<body>
+    <h1>Restaurant Chatbot</h1>
+    <p>식당에 대해 궁금한 점을 물어보세요!</p>
+
+    <input type="text" id="userInput" placeholder="Type your question here..." />
+    <button onclick="askQuestion()">Ask</button>
+
+    <div id="chatHistory">
+        <!-- 대화 내용 표시 -->
+    </div>
+
+    <audio id="audioPlayer" controls style="display:none;"></audio>
+
+    <script>
+        function askQuestion() {
+            const userInput = document.getElementById('userInput').value;
+            const chatHistory = document.getElementById('chatHistory');
+
+            if (!userInput) {
+                alert("Please enter a question.");
+                return;
+            }
+
+            // 사용자 질문을 화면에 추가
+            chatHistory.innerHTML += `<p><strong>User:</strong> ${userInput}</p>`;
+
+            // 서버로 질문을 전송
+            fetch('/get_response', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ user_input: userInput })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // 챗봇 답변을 화면에 추가
+                chatHistory.innerHTML += `<p><strong>Chatbot:</strong> ${data.answer}</p>`;
+                
+                // 오디오 파일 경로 설정 및 자동 재생
+                const audioPlayer = document.getElementById('audioPlayer');
+                audioPlayer.src = data.audio_file;
+                audioPlayer.style.display = 'block';
+                audioPlayer.play();
+            });
+
+            // 입력 필드 초기화
+            document.getElementById('userInput').value = '';
+        }
+    </script>
+</body>
+</html>
